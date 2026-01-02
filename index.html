@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IoT My Motor</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2 {
+      font-size: 6vw; /* Responsive font size */
+      margin: 20px 0;
+    }
+
+    /* PUSH BUTTONS */
+    .btn {
+      width: 80vw; /* full width on mobile */
+      max-width: 400px;
+      height: 15vw; /* responsive height */
+      max-height: 90px;
+      font-size: 5vw;
+      max-font-size: 26px;
+      margin: 15px auto;
+      border: none;
+      border-radius: 14px;
+      color: white;
+      cursor: pointer;
+      background: #555;
+      display: block;
+      transition: background 0.2s;
+    }
+
+    .btn:active {
+      background: green;
+    }
+
+    /* INDICATOR LIST */
+    .indicator-list {
+      margin: 40px auto;
+      width: 90%;
+      max-width: 400px;
+      text-align: left;
+    }
+
+    .indicator-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 25px;
+      font-size: 4vw; /* responsive font */
+    }
+
+    .dot {
+      width: 10vw;
+      max-width: 40px;
+      height: 10vw;
+      max-height: 40px;
+      border-radius: 50%;
+      background: red;
+      margin-right: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Optional: smooth scaling on small devices */
+    @media (max-width: 400px) {
+      .btn {
+        height: 18vw;
+        font-size: 5.5vw;
+      }
+
+      .indicator-row {
+        font-size: 5vw;
+      }
+
+      .dot {
+        width: 12vw;
+        height: 12vw;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>IoT My Motor</h2>
+
+<!-- PUSH & HOLD BUTTONS -->
+<button class="btn"
+  onmousedown="led1On()"
+  onmouseup="led1Off()"
+  ontouchstart="led1On()"
+  ontouchend="led1Off()">
+  ON Button
+</button>
+
+<button class="btn"
+  onmousedown="led2On()"
+  onmouseup="led2Off()"
+  ontouchstart="led2On()"
+  ontouchend="led2Off()">
+  OFF Button
+</button>
+
+<!-- INDICATOR LIST -->
+<div class="indicator-list">
+  <div class="indicator-row">
+    <div id="in1" class="dot"></div>
+    <div>Protection Ok</div>
+  </div>
+
+  <div class="indicator-row">
+    <div id="in2" class="dot"></div>
+    <div>Motor ON</div>
+  </div>
+
+  <div class="indicator-row">
+    <div id="in3" class="dot"></div>
+    <div>Water Flow</div>
+  </div>
+</div>
+
+<script>
+/* MQTT CONNECT */
+const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+
+client.on("connect", () => {
+  console.log("MQTT Connected");
+  client.subscribe("esp32/input");
+});
+
+/* RECEIVE DIGITAL INPUT DATA */
+client.on("message", (topic, message) => {
+  if (topic === "esp32/input") {
+    const data = message.toString().split(",");
+    updateIndicator("in1", data[0]);
+    updateIndicator("in2", data[1]);
+    updateIndicator("in3", data[2]);
+  }
+});
+
+/* LED 1 PUSH */
+function led1On() { client.publish("esp32/led1/cmd", "ON"); }
+function led1Off() { client.publish("esp32/led1/cmd", "OFF"); }
+
+/* LED 2 PUSH */
+function led2On() { client.publish("esp32/led2/cmd", "ON"); }
+function led2Off() { client.publish("esp32/led2/cmd", "OFF"); }
+
+/* INDICATOR COLOR */
+function updateIndicator(id, value) {
+  const el = document.getElementById(id);
+  el.style.background = (value === "1") ? "green" : "red";
+}
+</script>
+
+</body>
+</html>
