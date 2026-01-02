@@ -147,12 +147,13 @@ client.on("message", (topic, message) => {
 });
 
 /* LED 1 PUSH */
-function led1On() { client.publish("esp32/led1/cmd", "ON"); }
-function led1Off() { client.publish("esp32/led1/cmd", "OFF"); }
+function led1On() {
+  client.publish("esp32/led1/cmd", "ON");
+}
 
-/* LED 2 PUSH */
-function led2On() { client.publish("esp32/led2/cmd", "ON"); }
-function led2Off() { client.publish("esp32/led2/cmd", "OFF"); }
+function led2On() {
+  client.publish("esp32/led2/cmd", "ON");
+}
 
 /* INDICATOR COLOR */
 function updateIndicator(id, value) {
